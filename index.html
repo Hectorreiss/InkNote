@@ -305,14 +305,15 @@ function renderAcct(){
   if(amsg){const m=document.createElement('div');m.className='msg';m.textContent=amsg;A.append(m)}
 }
 async function login(){
-  amsg='';renderAcct();
+  amsg='Aguardando o login do Google…';renderAcct();
   const p=new fb.GoogleAuthProvider();
   try{await fb.signInWithPopup(fb.auth,p)}
   catch(e){
     const c=e.code||'';
     if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){try{await fb.signInWithRedirect(fb.auth,p);return}catch(e2){}}
     amsg=c==='auth/unauthorized-domain'?'Este endereço ainda não está autorizado no Firebase (Authentication → Settings → Authorized domains).'
-      :(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request')?'':'Não foi possível entrar ('+(c||'erro')+').';
+      :c==='auth/popup-closed-by-user'?'A janela do Google fechou antes de concluir o login. Se você escolheu a conta e ela fechou sozinha, o navegador pode estar bloqueando o login (no Brave, desative os Shields para este site e tente de novo).'
+      :c==='auth/cancelled-popup-request'?'':'Não foi possível entrar ('+(c||'erro')+').';
     renderAcct();
   }
 }
