@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu Caderno</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1c1a17">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&display=swap">
+<style>
+:root{--bg:#f4efe6;--paper:#fffdf8;--ink:#2b2622;--muted:#8a8178;--line:#e8dfd0;--accent:#c8553d;--side:#ebe4d6;--border:#ddd3c1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--paper:#242120;--ink:#ece5da;--muted:#9a9187;--line:#322e2a;--accent:#e07a5f;--side:#1f1d1a;--border:#3a3631}}
+:root[data-theme="dark"]{--bg:#1c1a17;--paper:#242120;--ink:#ece5da;--muted:#9a9187;--line:#322e2a;--accent:#e07a5f;--side:#1f1d1a;--border:#3a3631}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.app{display:grid;grid-template-columns:300px 1fr;height:100%}
+.side{background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.head{padding:16px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.head h1{font:600 22px Lora,Georgia,serif;margin:0}
+.btn{border:1px solid var(--border);background:var(--paper);border-radius:8px;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.search{margin:0 16px 10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--paper);width:calc(100% - 32px)}
+.list{overflow-y:auto;flex:1;padding:0 10px 12px}
+.item{display:block;width:100%;text-align:left;background:none;border:0;border-left:4px solid var(--c);border-radius:6px;padding:9px 11px;margin-bottom:4px;cursor:pointer}
+.item:hover{background:var(--paper)}
+.item.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.item b{display:block;font:600 15px Lora,Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item small{color:var(--muted);font-size:11px}
+.acct{margin:0 16px 10px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--paper);display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px}
+.acct img{width:28px;height:28px;border-radius:50%}
+.acct .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct .msg{width:100%;color:var(--muted);font-size:12px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.edit{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--paper)}
+.bar,.tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 20px;border-bottom:1px solid var(--border)}
+.tools{background:var(--side)}
+.sp{flex:1}
+.back{display:none}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:var(--c);cursor:pointer;padding:0}
+.dot.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--paper) inset}
+.sz{width:34px;display:inline-flex;align-items:center;justify-content:center;padding:6px 0}
+.sz i{display:block;border-radius:50%;background:currentColor}
+.sep{width:1px;height:22px;background:var(--border)}
+.title{border:0;outline:0;background:none;font:600 28px Lora,Georgia,serif;padding:14px 28px 6px;width:100%}
+.scroll{flex:1;overflow:auto;min-height:0}
+.page{position:relative;background:linear-gradient(var(--paper) 31px,var(--line) 31px) 0 0/100% 32px}
+.page textarea{position:absolute;inset:0;width:100%;border:0;outline:0;resize:none;background:none;overflow:hidden;line-height:32px;padding:0 28px;font-size:16px}
+.page canvas{position:absolute;left:0;top:0;pointer-events:none;touch-action:none;cursor:crosshair}
+.foot{padding:8px 28px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;border-top:1px solid var(--border)}
+.none{margin:auto;color:var(--muted)}
+@media (max-width:720px){
+.app{grid-template-columns:1fr}
+.app[data-view="list"] .edit,.app[data-view="edit"] .side{display:none}
+.back{display:inline-block}
+.title{font-size:24px;padding:12px 16px 4px}.page textarea{padding:0 16px}.bar,.tools{padding:8px 12px}.foot{padding:8px 16px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-view="list">
+  <aside class="side">
+    <div class="head"><h1 style="display:flex;align-items:center;gap:8px"><img src="icon-192.png" alt="" width="30" height="30" style="border-radius:7px">Meu Caderno</h1><button class="btn on" id="new">+ Nova</button></div>
+    <div class="acct" id="acct" hidden></div>
+    <input class="search" id="q" type="search" placeholder="Buscar nas anotações…">
+    <div class="list" id="list"></div>
+  </aside>
+  <main class="edit">
+    <div class="bar" id="bar">
+      <button class="btn back" id="back">← Voltar</button>
+      <span id="dots" style="display:flex;gap:6px" title="Cor da nota"></span>
+      <span class="sp"></span>
+      <button class="btn" id="pin">📌 Fixar</button>
+      <button class="btn" id="del">Excluir</button>
+    </div>
+    <div class="tools" id="tools">
+      <button class="btn" data-tool="type">⌨️ Digitar</button>
+      <button class="btn" data-tool="pen">✏️ Caneta</button>
+      <button class="btn" data-tool="eraser">🧽 Borracha</button>
+      <span class="sep"></span>
+      <span id="penopts" style="display:flex;gap:6px;align-items:center" hidden>
+        <span id="inks" style="display:flex;gap:6px"></span>
+        <span id="sizes" style="display:flex;gap:4px"></span>
+      </span>
+      <span class="sp"></span>
+      <button class="btn" id="undo" title="Desfazer (Ctrl+Z)">↶ Desfazer</button>
+      <button class="btn" id="redo" title="Refazer (Ctrl+Y)">↷ Refazer</button>
+      <button class="btn" id="clr">Limpar desenho</button>
+    </div>
+    <input class="title" id="t" placeholder="Título" autocomplete="off">
+    <div class="scroll" id="scroll"><div class="page" id="page"><textarea id="b" placeholder="Digite aqui e use a caneta para desenhar por cima…"></textarea><canvas id="cv"></canvas></div></div>
+    <div class="foot" id="foot"><span id="count"></span><span id="status">Salvo</span></div>
+    <div class="none" id="none" hidden>Nenhuma nota aberta. Crie uma nova para começar.</div>
+  </main>
+</div>
+<script src="firebase-config.js"></script>
+<script>
+const KEY='caderno-v1', COLORS=['#c8553d','#e0a030','#4f8a5b','#3f7cac','#8b5fa8'];
+const INKS=['k','#d64541','#2f6fd6','#2e9b57','#e08a00'], SIZES=[2,4,8];
+const $=s=>document.querySelector(s);
+const cv=$('#cv'), ctx=cv.getContext('2d'), page=$('#page'), ta=$('#b');
+let notes=[], cur=null, q='', saveT=null, col=false, fb=null, user=null, amsg='', queue=Promise.resolve();
+let tool='type', ink='k', size=4, dpr=1, pageH=0, drawing=false, stroke=null, changed=false;
+const dirty=new Set(), gone=new Set();
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const get=()=>notes.find(n=>n.id===cur);
+const inkColor=c=>c==='k'?getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#222':c;
+const lkey=()=>KEY+(user?':'+user.uid:'');
+function loadLocal(){try{const j=JSON.parse(localStorage.getItem(lkey())||'[]');return Array.isArray(j)?j:[]}catch(e){return[]}}
+function saveLocal(){try{localStorage.setItem(lkey(),JSON.stringify(notes))}catch(e){}}
+function setStatus(s){$('#status').textContent=s}
+function touch(n){n.updated=Date.now();delete n.w;dirty.add(n.id)}
+async function flush(){
+  saveLocal();
+  if(user&&col){
+    try{
+      for(const id of [...dirty]){
+        const n=notes.find(x=>x.id===id);
+        if(n)await fb.setDoc(fb.doc(fb.db,'users',user.uid,'notes',id),{json:JSON.stringify(n),updated:n.updated});
+        dirty.delete(id);
+      }
+      for(const id of [...gone]){await fb.deleteDoc(fb.doc(fb.db,'users',user.uid,'notes',id));gone.delete(id)}
+    }catch(e){setStatus('Salvo neste aparelho (sem conexão)');return}
+    setStatus('Salvo na nuvem');return;
+  }
+  setStatus(user?'Salvo neste aparelho':'Salvo neste navegador');
+}
+function persist(){setStatus('Salvando…');clearTimeout(saveT);saveT=setTimeout(()=>{queue=queue.then(flush)},600)}
+function mk(){const t=Date.now();return{id:uid(),title:'',body:'',color:COLORS[0],pin:false,strokes:[],ph:0,created:t,updated:t}}
+
+/* ---------- desenho ---------- */
+function drawStroke(s){
+  ctx.strokeStyle=inkColor(s.c);ctx.lineWidth=s.w;ctx.lineCap=ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(s.p[0],s.p[1]);
+  if(s.p.length<4)ctx.lineTo(s.p[0]+.01,s.p[1]);
+  for(let i=2;i<s.p.length;i+=2)ctx.lineTo(s.p[i],s.p[i+1]);
+  ctx.stroke();
+}
+function redraw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  const n=get();if(n)n.strokes.forEach(drawStroke);
+}
+function fit(){
+  const n=get();if(!n||!page.clientWidth)return;
+  ta.style.height='0px';const th=ta.scrollHeight;
+  let ext=0;for(const s of n.strokes)for(let i=1;i<s.p.length;i+=2)ext=Math.max(ext,s.p[i]);
+  const h=Math.round(Math.max($('#scroll').clientHeight,th+96,ext+120,n.ph||0));
+  ta.style.height=h+'px';page.style.height=h+'px';pageH=h;
+  const w=page.clientWidth;dpr=Math.min(window.devicePixelRatio||1,2);
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){
+    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+    cv.style.width=w+'px';cv.style.height=h+'px';redraw();
+  }
+}
+const pos=e=>{const r=cv.getBoundingClientRect();return[Math.round(e.clientX-r.left),Math.round(e.clientY-r.top)]};
+function segDist(px,py,ax,ay,bx,by){
+  const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;
+  let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+}
+function hit(s,x,y){
+  const p=s.p,r=14+s.w/2;
+  if(p.length<4)return Math.hypot(x-p[0],y-p[1])<r;
+  for(let i=2;i<p.length;i+=2)if(segDist(x,y,p[i-2],p[i-1],p[i],p[i+1])<r)return true;
+  return false;
+}
+function erase(x,y){
+  const n=get(),b=n.strokes.length;
+  n.strokes=n.strokes.filter(s=>!hit(s,x,y));
+  if(n.strokes.length!==b){changed=true;redraw()}
+}
+cv.onpointerdown=e=>{
+  if(tool==='type'||!e.isPrimary)return;
+  e.preventDefault();cv.setPointerCapture(e.pointerId);
+  const[x,y]=pos(e);drawing=true;changed=false;
+  if(tool==='pen'){stroke={c:ink,w:size,p:[x,y]};get().strokes.push(stroke);drawStroke(stroke);changed=true}
+  else erase(x,y);
+};
+cv.onpointermove=e=>{
+  if(!drawing)return;
+  const[x,y]=pos(e);
+  if(tool==='eraser'){erase(x,y);return}
+  const p=stroke.p,lx=p[p.length-2],ly=p[p.length-1];
+  if(Math.hypot(x-lx,y-ly)<2)return;
+  p.push(x,y);
+  if(y>pageH-60){get().ph=pageH+400;fit()}
+  else{ctx.strokeStyle=inkColor(stroke.c);ctx.lineWidth=stroke.w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke()}
+};
+cv.onpointerup=cv.onpointercancel=()=>{
+  if(!drawing)return;drawing=false;stroke=null;
+  if(changed){touch(get());commit('draw');fit();renderList();persist()}
+};
+function setTool(t){
+  tool=t;cv.style.pointerEvents=t==='type'?'none':'auto';
+  document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));
+  $('#penopts').hidden=t!=='pen';
+  if(t==='type')ta.focus({preventScroll:true});
+}
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+function buildPens(){
+  const I=$('#inks'),S=$('#sizes');I.textContent='';S.textContent='';
+  for(const c of INKS){const b=document.createElement('button');b.className='dot'+(ink===c?' on':'');b.style.setProperty('--c',c==='k'?'var(--ink)':c);b.title='Cor da caneta';
+    b.onclick=()=>{ink=c;buildPens()};I.append(b)}
+  for(const s of SIZES){const b=document.createElement('button');b.className='btn sz'+(size===s?' on':'');b.title='Espessura';
+    const i=document.createElement('i');i.style.width=i.style.height=(s+3)+'px';b.append(i);b.onclick=()=>{size=s;buildPens()};S.append(b)}
+}
+function ask(b,fn){
+  if(b.dataset.ask){clearTimeout(b._t);delete b.dataset.ask;b.textContent=b.dataset.l;fn();return}
+  b.dataset.l=b.textContent;b.dataset.ask=1;b.textContent='Confirmar?';
+  b._t=setTimeout(()=>{delete b.dataset.ask;b.textContent=b.dataset.l},3000);
+}
+/* histórico unificado: texto, título e desenho */
+const H={};
+const snap=n=>({title:n.title,body:n.body,strokes:n.strokes.slice()});
+function commit(kind){
+  const n=get(),h=n&&H[n.id];if(!h)return;const now=Date.now();
+  if(!(kind==='text'&&h.k==='text'&&now-h.t<1000)){h.u.push(h.last);if(h.u.length>100)h.u.shift()}
+  h.last=snap(n);h.k=kind;h.t=now;h.r=[];
+}
+function apply(s){
+  const n=get();n.title=s.title;n.body=s.body;n.strokes=s.strokes.slice();
+  $('#t').value=n.title;ta.value=n.body;touch(n);count();fit();redraw();renderList();persist();
+}
+function undo(){const n=get(),h=n&&H[n.id];if(!h||!h.u.length)return;h.r.push(h.last);h.last=h.u.pop();h.k='';apply(h.last)}
+function redo(){const n=get(),h=n&&H[n.id];if(!h||!h.r.length)return;h.u.push(h.last);h.last=h.r.pop();h.k='';apply(h.last)}
+$('#undo').onclick=undo;
+$('#redo').onclick=redo;
+document.addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey)||e.altKey||!get()||e.target.id==='q')return;
+  const k=e.key.toLowerCase();
+  if(k==='z'&&!e.shiftKey){e.preventDefault();undo()}
+  else if(k==='y'||(k==='z'&&e.shiftKey)){e.preventDefault();redo()}
+});
+$('#clr').onclick=()=>ask($('#clr'),()=>{const n=get();if(!n||!n.strokes.length)return;n.strokes=[];n.ph=0;touch(n);commit('draw');redraw();fit();renderList();persist()});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);
+
+/* ---------- notas ---------- */
+function renderList(){
+  const L=$('#list');L.textContent='';
+  const s=q.toLowerCase();
+  const arr=notes.filter(n=>!s||(n.title+' '+n.body).toLowerCase().includes(s))
+    .sort((a,b)=>(b.pin-a.pin)||(b.updated-a.updated));
+  if(!arr.length){const d=document.createElement('div');d.className='empty';d.textContent=s?'Nada encontrado.':'Sem notas ainda.';L.append(d);return}
+  for(const n of arr){
+    const b=document.createElement('button');b.className='item'+(n.id===cur?' on':'');b.style.setProperty('--c',n.color);
+    const t=document.createElement('b');t.textContent=(n.pin?'📌 ':'')+(n.title||'Sem título')+((n.strokes||[]).length?' ✏️':'');
+    const p=document.createElement('span');p.textContent=n.body.replace(/\s+/g,' ').slice(0,80)||'Nota vazia';
+    const d=document.createElement('small');d.textContent=new Date(n.updated).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+    b.append(t,p,d);b.onclick=()=>{open(n.id);$('#app').dataset.view='edit';fit()};L.append(b);
+  }
+}
+function renderDots(){
+  const D=$('#dots');D.textContent='';const n=get();if(!n)return;
+  for(const c of COLORS){const b=document.createElement('button');b.className='dot'+(n.color===c?' on':'');b.style.setProperty('--c',c);b.title='Cor da nota';
+    b.onclick=()=>{n.color=c;touch(n);renderDots();renderList();persist()};D.append(b)}
+}
+function count(){const n=get();if(!n)return;const w=(n.body.trim().match(/\S+/g)||[]).length;$('#count').textContent=w+(w===1?' palavra':' palavras')+' · '+n.strokes.length+(n.strokes.length===1?' traço':' traços')}
+function open(id){
+  cur=id;const n=get();const has=!!n;
+  for(const e of ['#t','#scroll','#bar','#tools','#foot'])$(e).hidden=!has;
+  $('#none').hidden=has;
+  if(has){n.strokes=n.strokes||[];H[id]=H[id]||{u:[],r:[],last:snap(n),k:'',t:0};$('#t').value=n.title;ta.value=n.body;
+    $('#pin').textContent=n.pin?'📌 Fixada':'📌 Fixar';renderDots();count();$('#scroll').scrollTop=0;fit();redraw()}
+  renderList();
+}
+$('#new').onclick=()=>{const n=mk();notes.push(n);dirty.add(n.id);open(n.id);$('#app').dataset.view='edit';fit();persist();$('#t').focus()};
+$('#back').onclick=()=>{$('#app').dataset.view='list'};
+$('#q').oninput=e=>{q=e.target.value;renderList()};
+$('#t').oninput=e=>{const n=get();n.title=e.target.value;touch(n);commit('text');renderList();persist()};
+ta.oninput=e=>{const n=get();n.body=e.target.value;touch(n);commit('text');count();fit();renderList();persist()};
+$('#pin').onclick=()=>{const n=get();n.pin=!n.pin;touch(n);$('#pin').textContent=n.pin?'📌 Fixada':'📌 Fixar';renderList();persist()};
+$('#del').onclick=()=>ask($('#del'),()=>{
+  gone.add(cur);dirty.delete(cur);notes=notes.filter(n=>n.id!==cur);
+  open(notes[0]?notes[0].id:null);$('#app').dataset.view='list';persist();
+});
+new ResizeObserver(()=>fit()).observe($('#scroll'));
+
+/* ---------- login com Google + nuvem (Firebase) ---------- */
+const cfgOk=()=>{const c=window.FIREBASE_CONFIG;return !!(c&&c.apiKey&&!/COLE/.test(c.apiKey))};
+function renderAcct(){
+  const A=$('#acct');A.textContent='';
+  if(!cfgOk()){A.hidden=true;return}
+  A.hidden=false;
+  const w=document.createElement('span');w.className='who';
+  if(user){
+    if(user.photoURL){const i=document.createElement('img');i.src=user.photoURL;i.referrerPolicy='no-referrer';i.alt='';A.append(i)}
+    w.textContent=user.displayName||user.email;w.title=user.email||'';
+    const b=document.createElement('button');b.className='btn';b.textContent='Sair';
+    b.onclick=async()=>{clearTimeout(saveT);await flush();fb.signOut(fb.auth)};
+    A.append(w,b);
+  }else{
+    w.textContent='Entre para salvar na nuvem';
+    const b=document.createElement('button');b.className='btn on';b.textContent='Entrar com Google';b.disabled=!fb;b.onclick=login;
+    A.append(w,b);
+  }
+  if(amsg){const m=document.createElement('div');m.className='msg';m.textContent=amsg;A.append(m)}
+}
+async function login(){
+  amsg='';renderAcct();
+  const p=new fb.GoogleAuthProvider();
+  try{await fb.signInWithPopup(fb.auth,p)}
+  catch(e){
+    const c=e.code||'';
+    if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){try{await fb.signInWithRedirect(fb.auth,p);return}catch(e2){}}
+    amsg=c==='auth/unauthorized-domain'?'Este endereço ainda não está autorizado no Firebase (Authentication → Settings → Authorized domains).'
+      :(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request')?'':'Não foi possível entrar ('+(c||'erro')+').';
+    renderAcct();
+  }
+}
+function ensureOne(){
+  if(notes.length)return;
+  const n=mk();n.w=1;n.title='Bem-vindo ao seu caderno';
+  n.body='Aqui você escreve e desenha na mesma página.\n\n• Em “Digitar”, escreva o texto normalmente.\n• Em “Caneta”, desenhe por cima: setas, esquemas, exemplos.\n• A “Borracha” apaga traço por traço.\n\nTudo é salvo automaticamente.';
+  notes.push(n);saveLocal();
+}
+function showFirst(){ensureOne();open(notes.slice().sort((a,b)=>b.updated-a.updated)[0].id);$('#app').dataset.view='list'}
+function startGuest(msg){amsg=msg||'';user=null;col=false;notes=loadLocal();showFirst();renderAcct();setStatus('Salvo neste navegador')}
+async function onUser(u){
+  const changed=(user&&user.uid)!==(u&&u.uid);
+  if(changed){for(const k in H)delete H[k];dirty.clear();gone.clear()}
+  col=false;
+  if(!u){
+    if(user){try{localStorage.removeItem(lkey())}catch(e){}}
+    user=null;amsg='';notes=loadLocal();showFirst();renderAcct();setStatus('Salvo neste navegador');return;
+  }
+  if(changed&&!user&&notes.length)saveLocal();
+  let guest=[];
+  if(changed&&!user){try{const j=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(j))guest=j.filter(n=>!n.w)}catch(e){}}
+  const keep=changed?[]:notes;
+  user=u;amsg='Sincronizando suas notas…';renderAcct();
+  const cache=loadLocal(),remote=new Map();let ok=false;
+  try{
+    const snap=await Promise.race([fb.getDocs(fb.collection(fb.db,'users',u.uid,'notes')),new Promise((_,rej)=>setTimeout(()=>rej(new Error('tempo esgotado')),12000))]);
+    for(const d of snap.docs){try{const v=JSON.parse(d.data().json);remote.set(v.id,v)}catch(e){}}
+    ok=true;amsg='';
+  }catch(e){amsg='Não consegui sincronizar com a nuvem ('+((e&&(e.code||e.message))||'erro')+'). Usando a cópia deste aparelho.'}
+  const m=new Map(remote);
+  for(const n of [...cache,...guest,...keep]){const r=m.get(n.id);if(!r||n.updated>r.updated)m.set(n.id,n)}
+  notes=[...m.values()];
+  if(ok)for(const n of notes){const r=remote.get(n.id);if(!n.w&&(!r||n.updated>r.updated))dirty.add(n.id)}
+  if(changed){try{localStorage.removeItem(KEY)}catch(e){}}
+  col=ok;saveLocal();showFirst();renderAcct();
+  await flush();
+  if(!ok)setStatus('Salvo neste aparelho (sem conexão)');
+}
+window.addEventListener('online',()=>{if(user&&!col)onUser(user);else if(dirty.size)persist()});
+async function initCloud(){
+  try{
+    const V='https://www.gstatic.com/firebasejs/10.14.1/';
+    const[a,au,fs]=await Promise.all([import(V+'firebase-app.js'),import(V+'firebase-auth.js'),import(V+'firebase-firestore.js')]);
+    const app=a.initializeApp(window.FIREBASE_CONFIG);
+    fb={...au,...fs,auth:au.getAuth(app),db:fs.getFirestore(app)};
+    renderAcct();
+    au.onAuthStateChanged(fb.auth,u=>{onUser(u).catch(e=>{amsg='Erro ao carregar as notas ('+((e&&(e.code||e.message))||'erro')+').';renderAcct()})},()=>startGuest('Não foi possível verificar o login.'));
+  }catch(e){startGuest('Não foi possível carregar o login. Verifique a conexão.')}
+}
+
+buildPens();setTool('type');
+if(cfgOk()){
+  open(null);
+  const d=document.createElement('div');d.className='empty';d.textContent='Carregando…';$('#list').textContent='';$('#list').append(d);
+  initCloud();
+}else{startGuest()}
+</script>
+</body>
+</html>
